@@ -12,10 +12,11 @@ class Watcher
 
   def start
     Thread.current.name = progname
-    worker = Backup::Worker.new(logger:, queue:).start
+    worker = Backup::Worker.new(logger:, queue:)
     enqueuer = Backup::Enqueuer.new(logger:, config:, queue:)
-
+    
     begin
+      worker.start
       enqueuer.start
     rescue Interrupt => e
       logger.info(progname) { 'Received SIGINT, Exiting' }

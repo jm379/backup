@@ -43,7 +43,6 @@ module Backup
       end
 
       logger.info(Thread.current.name) { 'Worker started' }
-      self
     end
 
     def stop
