@@ -3,7 +3,7 @@ require 'psych'
 class Config
   attr_reader :config
 
-  def initialize(path: 'config.yml')
+  def initialize(path:)
     @config = Psych.safe_load_file path
   end
 

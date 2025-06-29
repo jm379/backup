@@ -5,14 +5,13 @@ require_relative 'backup/worker'
 
 class Watcher
   EVENTS = %i[create modify delete move close_write attrib].freeze
-  attr_reader :config, :logger, :notifier, :queue, :stop
+  attr_reader :config, :logger, :notifier, :queue
 
   def initialize(config:, logger:)
     @config = config
     @logger = logger
     @notifier = INotify::Notifier.new
     @queue = Thread::Queue.new
-    @stop = false
   end
 
   def start
@@ -20,7 +19,7 @@ class Watcher
     worker = Backup::Worker.new(logger:, queue:).start
 
     config.directories do |config|
-      adapter = Backup::Adapters.adapter(config, logger:)
+      adapter = Backup::Adapters.adapter(config:, logger:)
 
       notifier.watch(File.expand_path(adapter.path), *EVENTS, :recursive) do |event|
         queue.push Backup::Job.new(adapter:, event:)
