@@ -1,0 +1,4 @@
+directories:
+  - path: ~/Workspace
+    output: ~/Backup
+    adapter: rsync
