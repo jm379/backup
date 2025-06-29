@@ -10,8 +10,6 @@ module Backup
       def initialize(config, logger:)
         @config = config
         @logger = logger
-
-        info "Watching #{path}"
       end
 
       def call(event)
@@ -38,7 +36,11 @@ module Backup
       end
 
       def info(msg)
-        logger.info('Rsync') { msg }
+        logger.info(progname) { msg }
+      end
+
+      def progname
+        self.class.name
       end
     end
   end

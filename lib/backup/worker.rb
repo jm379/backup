@@ -16,7 +16,7 @@ module Backup
       @thr = Thread.new do
         loop do
           if @stop
-            logger.info(Thread.current.name) { 'Exiting' }
+            logger.info(progname) { 'Exiting' }
             thr.exit
             threads.each(&:exit)
           end
@@ -31,7 +31,7 @@ module Backup
               begin
                 job.run
               rescue => e
-                logger.error("#{Thread.current.name}##{job.name}") { "Error running job: #{e.message}" }
+                logger.error("#{progname}##{job.name}") { "Error running job: #{e.message}" }
               end
             end
           end
@@ -41,22 +41,25 @@ module Backup
           set.clear
         end
       end
-      @thr.name = "Worker"
 
       logger.info(Thread.current.name) { 'Worker started' }
       self
     end
 
     def stop
+      logger.info(Thread.current.name) { 'Stopping Worker' }
       @stop = true
+      return unless thr.alive?
 
-      if @thr.alive?
-        logger.info(Thread.current.name) { 'Waiting 10 seconds before forcefully killing worker thread' }
-        unless thr.join(10)
-          logger.info(Thread.current.name) { 'Forcefully killing worker thread' }
-          thr.kill
-        end
-      end
+      logger.info(Thread.current.name) { 'Waiting 10 seconds before forcefully killing worker thread' }
+      return if thr.join(10)
+
+      logger.info(Thread.current.name) { 'Forcefully killing worker thread' }
+      thr.kill
+    end
+
+    def progname
+      self.class.name
     end
   end
 end

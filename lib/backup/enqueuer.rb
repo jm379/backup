@@ -3,7 +3,7 @@ require_relative 'job'
 require_relative 'adapters'
 
 module Backup
-  class Notifier
+  class Enqueuer
     attr_reader :config, :logger, :queue, :notifier
     EVENTS = %i[create modify delete move close_write attrib].freeze
 
@@ -18,27 +18,29 @@ module Backup
       config.directories do |config|
         adapter = Adapters.adapter(config:, logger:)
 
+        logger.info(progname) { "Watching #{adapter.path}" }
         notifier.watch(File.expand_path(adapter.path), *EVENTS, :recursive) do |event|
           begin
             job = Job.new(adapter:, event:)
             queue.push job
-            logger.debug('Notifier') { "Enqueued #{job.name} job caused by the event(s) #{event.flags} on #{event.absolute_name}" }
+            logger.debug(progname) { "Enqueued #{job.name} job caused by the event(s) #{event.flags} on #{event.absolute_name}" }
           rescue => e
-            logger.error('Notifier') { "Failed to enqueue #{job&.name || 'Unknown'} job with event: #{event.flags} on #{event.absolute_name}: #{e.message}" }
+            logger.error(progname) { "Failed to enqueue #{job&.name || 'Unknown'} job with event: #{event.flags} on #{event.absolute_name}: #{e.message}" }
           end
         end
       end
 
-      self
+      logger.info(progname) { 'Enqueuer started' }
+      notifier.run
     end
 
     def stop
-      logger.info(Thread.current.name) { 'Stopping Notifier' }
+      logger.info(Thread.current.name) { 'Stopping Enqueuer' }
       notifier.close
     end
 
-    def run
-      notifier.run
+    def progname
+      self.class.name
     end
   end
 end

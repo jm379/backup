@@ -1,5 +1,5 @@
 require_relative 'backup/worker'
-require_relative 'backup/notifier'
+require_relative 'backup/enqueuer'
 
 class Watcher
   attr_reader :config, :logger, :notifier, :queue
@@ -11,17 +11,21 @@ class Watcher
   end
 
   def start
-    Thread.current.name = 'Watcher'
+    Thread.current.name = progname
     worker = Backup::Worker.new(logger:, queue:).start
-    notifier = Backup::Notifier.new(logger:, config:, queue:).start
+    enqueuer = Backup::Enqueuer.new(logger:, config:, queue:)
 
     begin
-      notifier.run
+      enqueuer.start
     rescue Interrupt => e
-      logger.info(Thread.current.name) { 'Received SIGINT, Exiting' }
-      notifier.stop
+      logger.info(progname) { 'Received SIGINT, Exiting' }
+      enqueuer.stop
       worker.stop
       logger.close
     end
+  end
+
+  def progname
+    self.class.name
   end
 end
