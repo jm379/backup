@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
-require_relative 'lib/config'
-require_relative 'lib/watcher'
+require_relative '../lib/config'
+require_relative '../lib/watcher'
 
 logger = Logger.new(STDOUT)
 logger.level = Logger::INFO

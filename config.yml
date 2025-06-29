@@ -1,7 +1,3 @@
 directories:
   - path: ~/Workspace
     output: ~/Backup
-  - path: ~/Music
-    output: ~/Backup
-  - path: ~/Pictures
-    output: ~/Backup
