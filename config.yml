@@ -1,4 +1,7 @@
 directories:
   - path: ~/Workspace
     output: ~/Backup
-    adapter: rsync
+  - path: ~/Music
+    output: ~/Backup
+  - path: ~/Pictures
+    output: ~/Backup

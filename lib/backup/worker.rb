@@ -11,24 +11,33 @@ module Backup
     end
 
     def start
+      threads = []
+
       @thr = Thread.new do
         loop do
           if @stop
             logger.info(Thread.current.name) { 'Exiting' }
             thr.exit
+            threads.each(&:exit)
           end
 
-          while job = queue.pop(false, timeout: 1) do
-            unless set.include?(job.hash)
-              set.add job.hash
+          loop do
+            job = queue.pop(false, timeout: 1)
+            break unless job
+            next if set.include?(job.hash)
+
+            set.add job.hash
+            threads << Thread.new do
               begin
                 job.run
               rescue => e
-                logger.error(Thread.current.name) { "Error running job: #{e.message}" }
+                logger.error("#{Thread.current.name}##{job.name}") { "Error running job: #{e.message}" }
               end
             end
           end
 
+          threads.each(&:join)
+          threads.clear
           set.clear
         end
       end

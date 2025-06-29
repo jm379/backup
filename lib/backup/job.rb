@@ -14,5 +14,9 @@ module Backup
     def hash
       @hash ||= adapter.hash
     end
+
+    def name
+      adapter.class.name
+    end
   end
 end
